@@ -21,3 +21,11 @@ ps_list/
 paper/
 HeatMap/
 __pycache__/
+# Local reproduction artifacts
+.env
+__pycache__/
+*.pyc
+*.pth
+result/
+gtd_*.jsonl
+datasets/gsm8k/
