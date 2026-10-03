@@ -1,3 +1,22 @@
+# Reproduction Branch
+
+This branch contains an independent reproduction and execution-semantics audit of the released GTD implementation on GSM8K.
+
+I kept the upstream project structure intact as much as possible and placed the audit-specific material under:
+
+- [`experiments/audits/`](experiments/audits/) — audit, repair, and ablation scripts
+- [`audit_results/`](audit_results/) — selected outputs from the reproduced runs
+- [`evidence/`](evidence/) — compact summaries and source traces
+- [`REPRODUCTION.md`](REPRODUCTION.md) — description of the reproduction, findings, and limitations
+
+The main issue examined in this branch is the relation between the generated adjacency matrix and the graph that is actually constructed by the released runtime. In the audited GSM8K runs, mean raw-to-executed edge Jaccard is 0.152. Re-encoding the same intended non-self adjacency in the coordinate order consumed by the runtime raises this to 0.863 across 603 saved records, without changing the diffusion model, Proxy, candidate sampling, or cycle filtering.
+
+The rest of the analysis traces how the Phase-1 labels are produced, checks Proxy sensitivity in the reproduced homogeneous-agent setting, and tests whether the runtime repair changes downstream task outcomes.
+
+See [`REPRODUCTION.md`](REPRODUCTION.md) for details.
+
+---
+
 # Agent-Diffusion: Guided Topology Diffusion for Multi-Agent Systems
 
 ## Overview

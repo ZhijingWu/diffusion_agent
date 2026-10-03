@@ -1,51 +1,70 @@
-# Source-Level Provenance Trace
+# Source trace
 
-This file records the minimal source path supporting the final technical note. Line numbers refer to the source copies in `source_reference/`.
+This note records the source locations used to establish the execution and supervision paths discussed in `REPRODUCTION.md`.
 
-## Phase-1 generation and labels
+## Phase-1 graph, utility, and cost
 
-`source_reference/experiments/run_gsm8k.py`:
+Source: `experiments/run_gsm8k.py`
 
-- Lines 137–142: each static `topology_matrix` is passed to `Graph(..., fixed_spatial_masks=topology_matrix)`.
-- Line 143: the graph is executed with `gdesigner_graph.arun(...)`.
-- Lines 145–146: the model answer is parsed and `utility` is binary task correctness.
-- Line 147: `cost = sum(sum(row) for row in topology_matrix)`.
-- Lines 149–155: the same raw `topology_matrix` becomes the Proxy graph (`dense_to_sparse`) and is paired with `[utility, cost]`.
-- Lines 158–164: the JSONL stores the raw graph and its `performance`.
-- Lines 183–190: Phase 2 reloads the stored raw graph for Proxy training.
-- Lines 194–198: successful raw graphs are appended directly as diffusion `A0` targets.
+In the Phase-1 loop:
 
-This establishes the Phase-1 / Phase-2 provenance chain directly from source.
+- each static `topology_matrix` is passed to `Graph(..., fixed_spatial_masks=topology_matrix)`;
+- the graph is executed with `gdesigner_graph.arun(...)`;
+- the returned answer is parsed and `utility` is set from task correctness;
+- `cost` is computed directly as `sum(sum(row) for row in topology_matrix)`;
+- the same raw `topology_matrix` is converted with `dense_to_sparse` for the Proxy graph and stored in the generated dataset.
 
-## Runtime mask interpretation
+In Phase 2:
 
-`source_reference/GDesigner/graph/graph.py`:
+- the stored `item['graph']` is loaded again for Proxy graph construction;
+- `[utility, cost]` is used as the Proxy target;
+- successful stored raw graphs are appended directly to the diffusion \(A_0\) training set.
 
-- Line 56: `fixed_spatial_masks` is converted to a tensor and flattened with `.view(-1)`.
-- Lines 73–74: after node creation, `self.init_potential_edges()` is called.
-- The class contains two definitions of `init_potential_edges`; the later definition at lines 498–506 overrides the earlier one in Python class construction.
-- Lines 498–505: the effective method creates only non-self potential edges (`if i != j`), giving `N(N-1)` spatial edges for `N` agents.
-- Lines 285–292: execution zips `potential_spatial_edges`, `spatial_logits`, and flattened `spatial_masks`; fixed masks are then added subject to cycle checking.
+## Spatial-mask interpretation
 
-For four agents this means a 16-position flattened raw mask is zipped against 12 non-self potential edges. The exhaustive one-hot probe in our supporting audit established the resulting coordinate mapping.
+Source: `GDesigner/graph/graph.py`
+
+The relevant sequence is:
+
+1. `fixed_spatial_masks` is converted to a tensor and flattened with `.view(-1)`;
+2. node creation is followed by `self.init_potential_edges()`;
+3. the effective later definition of `init_potential_edges()` creates spatial edges only for `i != j`;
+4. `construct_spatial_connection()` iterates over:
+
+   ```python
+   zip(self.potential_spatial_edges, self.spatial_logits, self.spatial_masks)
+   ```
+
+   and adds fixed-mask edges subject to cycle checking.
+
+For four agents, this gives 16 flattened mask positions and 12 non-self potential spatial edges.
+
+The one-hot coordinate probe and the 603-record topology audit quantify the resulting mapping rather than relying on source inspection alone.
+
+Relevant summaries:
+
+```text
+audit_results/topology_semantic_fidelity/summary.json
+audit_results/canonical_runtime_repair/summary.json
+```
 
 ## Final decision aggregation
 
-`source_reference/GDesigner/graph/graph.py`:
+Source: `GDesigner/graph/graph.py`
 
-- Lines 277–279: `connect_decision_node()` adds every agent as a predecessor of the decision node.
-- Lines 411–416: asynchronous execution calls `connect_decision_node()` after the agent rounds, then executes the final decision node.
+`connect_decision_node()` iterates over all agent nodes and adds the final decision node as a successor.
 
-This is the source basis for the **topology-bypass hypothesis**. The sink-only experiment is an ablation of this architecture, not a claim about the intended benchmark definition.
+At the end of asynchronous execution, the runtime calls:
 
-## Important wording discipline
+```python
+self.connect_decision_node()
+await self.decision_node.async_execute(input)
+```
 
-The source trace supports:
-- a representation/execution coordinate mismatch in the audited released-code path;
-- Phase-1 utility and cost being constructed from different semantic objects in the sense that utility is produced after runtime interpretation, while cost is computed from the raw topology matrix;
-- direct reuse of the raw graph for Proxy and diffusion supervision.
+This is the source basis for the sink-only ablation. The ablation is used only as an exploratory test of whether global final aggregation can reduce observable sensitivity to intermediate spatial topology.
 
-It does **not** by itself establish:
-- that all paper results are invalid;
-- that the same issue affects every benchmark or repository revision;
-- global novelty relative to all external discussions.
+## Scope
+
+These source locations establish the execution and supervision paths used in this audit.
+
+They do not by themselves establish effects on other benchmarks, checkpoints, or repository revisions, and they do not establish external novelty of the observations.

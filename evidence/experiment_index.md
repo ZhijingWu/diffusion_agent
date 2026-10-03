@@ -1,143 +1,240 @@
-# Experiment Index
+# Experiment index
 
-This index maps each research question to the script, artifact, result, and final status.
+This file maps the questions in `REPRODUCTION.md` to the scripts and committed outputs used in the audit.
 
 ## E01 — Proxy topology sensitivity
 
-**Question:** Does the trained Proxy distinguish structurally different topologies for the same task?
+**Question.** Does the reproduced Proxy assign meaningfully different scores to structurally different topologies for the same GSM8K question?
 
-- Script: `experiments/audits/core/audit_proxy_topology_sensitivity.py`
-- Result: `results/core/proxy_topology_sensitivity.json`
-- Design: 20 GSM8K questions × 8 topology patterns
-- Key metric: mean composite reward range = \(2.74\times10^{-8}\)
-- Status: **CONFIRMED for this reproduced checkpoint**
-- Use in author note: supporting mechanism evidence
+**Script**
 
-## E02 — ZO near-tie audit
+```text
+experiments/audits/core/audit_proxy_topology_sensitivity.py
+```
 
-**Question:** Does Proxy-guided candidate selection produce meaningful reward discrimination?
+**Output**
 
-- Scripts:
-  - `experiments/audits/core/audit_guidance_effect.py`
-  - `experiments/audits/core/analyze_guidance_ties.py`
-- Result: `results/core/guidance_effect.json`
-- Design: 100 guided runs
-- Key result:
-  - Proxy == first candidate: 89/100
-  - at epsilon \(10^{-6}\), 0/100 runs show meaningful discrimination
-- Status: **CONFIRMED for this reproduced checkpoint**
+```text
+audit_results/proxy_topology_sensitivity.json
+```
 
-## E03 — Raw vs executed topology
+20 GSM8K questions × 8 topology patterns. Mean composite reward range: \(2.74\times10^{-8}\).
 
-**Question:** Is the generated adjacency actually the graph executed by the MAS runtime?
+## E02 — Guided-candidate near ties
 
-- Script: `experiments/audits/core/audit_topology_semantic_fidelity.py`
-- Result: `results/core/topology_semantic_fidelity/`
-- Design: 603 saved runs
-- Key result:
-  - raw→executed Jaccard = 0.152
-  - raw→mapped Jaccard = 0.164
-  - mapped→executed Jaccard = 0.837
-- Status: **CONFIRMED**
+**Question.** Does Proxy-guided candidate selection produce reward separation above numerical near-tie scale?
 
-## E04 — Runtime coordinate probe
+**Scripts**
 
-**Question:** Why is raw→executed fidelity low?
+```text
+experiments/audits/core/audit_guidance_effect.py
+experiments/audits/core/analyze_guidance_ties.py
+```
 
-- Evidence: exhaustive one-hot position probe performed during the reproduction
-- Mechanism: flattened \(N^2\) mask is zipped with the effective non-self \(N(N-1)\) potential-edge list
-- Supporting source: `evidence/source_trace.md`
-- Status: **CONFIRMED**
-- Note: the exact probe output was observed interactively; the deterministic mechanism is preserved in the source and repair audits.
+**Output**
 
-## E05 — Canonical runtime repair
+```text
+audit_results/guidance_effect.json
+```
 
-**Question:** If only the edge coordinate system is aligned, does topology fidelity recover?
+Across 100 guided runs, the Proxy-selected candidate equals the first candidate in 89 cases. At tolerance \(10^{-6}\), all 100 runs are tied within tolerance.
 
-- Scripts:
-  - `experiments/audits/core/canonical_runtime_adapter.py`
-  - `experiments/audits/core/audit_canonical_runtime_repair.py`
-- Result: `results/core/canonical_runtime_repair/`
-- Design: 603 saved runs
-- Key result:
-  - Jaccard 0.152 → 0.863
-  - repaired mapping exact = 1.0
-- Status: **CONFIRMED**
+## E03 — Raw versus executed topology
+
+**Question.** How closely does the stored/generated adjacency match the graph executed by the released runtime?
+
+**Script**
+
+```text
+experiments/audits/core/audit_topology_semantic_fidelity.py
+```
+
+**Output**
+
+```text
+audit_results/topology_semantic_fidelity/summary.json
+```
+
+Across 603 saved records:
+
+- raw-to-mapped Jaccard: 0.164
+- mapped-to-executed Jaccard: 0.837
+- raw-to-executed Jaccard: 0.152
+
+## E04 — Coordinate mechanism
+
+**Question.** What source-level mechanism explains the low raw-to-executed fidelity?
+
+**Source paths**
+
+```text
+GDesigner/graph/graph.py
+evidence/source_trace.md
+```
+
+A concrete Phase-1 example is retained in:
+
+```text
+evidence/key_cases/case_phase1_coordinate_mismatch.json
+```
+
+## E05 — Canonical coordinate repair
+
+**Question.** If only the coordinate encoding is aligned to the runtime's edge order, does topology fidelity recover?
+
+**Scripts**
+
+```text
+experiments/audits/core/canonical_runtime_adapter.py
+experiments/audits/core/audit_canonical_runtime_repair.py
+experiments/audits/core/run_gsm8k_canonical_repair.py
+```
+
+**Output**
+
+```text
+audit_results/canonical_runtime_repair/summary.json
+```
+
+Raw-to-executed Jaccard increases from 0.152 to 0.863; the pre-cycle mapping is exact on 603/603 records.
 
 ## E06 — Phase-1 label provenance
 
-**Question:** What exactly are the training graph, utility, and cost labels?
+**Question.** What graph is stored, and where do the Phase-1 utility and cost labels come from?
 
-- Script: `experiments/audits/core/audit_phase1_label_provenance.py`
-- Result: `results/core/phase1_label_provenance/summary.json`
-- Design: source trace + 300 records
-- Key result:
-  - cost == raw adjacency edge count: 300/300
-  - utility is binary correctness: 300/300
-  - same raw graph is reused for Proxy and diffusion supervision
-- Status: **SOURCE-LEVEL CONFIRMED**
+**Script**
 
-## E07 — Training vs execution semantics
+```text
+experiments/audits/core/audit_phase1_label_provenance.py
+```
 
-**Question:** Are Phase-1 graph labels closer to canonical or old runtime execution semantics?
+**Source**
 
-- Script: `experiments/audits/core/audit_training_execution_semantics.py`
-- Result: `results/core/training_execution_semantics/summary.json`
-- Key result:
-  - raw→old execution Jaccard = 0.278
-  - raw→canonical execution Jaccard = 0.683
-  - cost vs raw edges MAE = 0
-  - cost vs old executed edges MAE = 2.333
-- Status: **CONFIRMED descriptive finding**
+```text
+experiments/run_gsm8k.py
+```
 
-## E08 — Proxy vs first-candidate downstream rounds
+**Output**
 
-**Question:** Does the near-tied Proxy guidance produce consistent downstream gains?
+```text
+audit_results/phase1_label_provenance/summary.json
+```
 
-- Supporting script: `experiments/audits/supporting/compare_proxy_vs_first_downstream.py`
-- Results: `results/supporting/proxy_vs_first_rounds/`
-- Three 100-question matched rounds:
-  - round 1: 0.91 vs 0.95, McNemar p=0.125
-  - round 2: 0.91 vs 0.92, p=1.0
-  - round 3: 0.92 vs 0.90, p=0.625
-- Status: **INCONCLUSIVE**
-- Use: supporting context only; do not headline.
+Cost equals stored raw edge count in 300/300 records; utility is binary in 300/300 records; the same stored raw graph is reused for Proxy and diffusion supervision.
 
-## E09 — All-agent FinalRefer original vs canonical
+## E07 — Training graph versus execution semantics
 
-**Question:** Does repairing execution semantics change downstream correctness under the original final aggregation architecture?
+**Question.** How close are the six Phase-1 training topologies to the released and canonical execution semantics?
 
-- Core results: `results/core/downstream_matched/` (seed 20266000)
-- Design: 50 matched questions
-- Key result:
-  - accuracy 0.96 vs 0.96
-  - generated topology same 49/50
-  - executed topology same 0/50
-  - correctness same 50/50
-- Status: **MODERATE evidence of downstream invariance on this sample**
+**Script**
 
-## E10 — Sink-only FinalRefer ablation
+```text
+experiments/audits/core/audit_training_execution_semantics.py
+```
 
-**Question:** Does removing all-agent final aggregation increase sensitivity to communication topology?
+**Output**
 
-- Scripts:
-  - `experiments/audits/core/decision_policy_patch.py`
-  - `experiments/audits/core/run_gsm8k_sink_original.py`
-  - `experiments/audits/core/run_gsm8k_sink_canonical.py`
-- Core results: `results/core/downstream_matched/` (seed 20267000)
-- Key result:
-  - accuracy 0.96 vs 0.92
-  - 2/50 paired outcome disagreements, both Original-only correct
-  - McNemar p=0.5
-- Status: **EXPLORATORY**
-- Use: author question / follow-up direction, not a confirmed claim.
+```text
+audit_results/training_execution_semantics/summary.json
+```
 
-## E11 — Effective search-budget audit
+Observed means:
 
-**Question:** Does the runtime mapping collapse K=5 candidate diversity?
+- raw-to-released-execution Jaccard: 0.278
+- raw-to-canonical-execution Jaccard: 0.683
+- cost vs. raw edge count MAE: 0
+- cost vs. released executed-edge count MAE: 2.333
 
-- Scripts in `experiments/audits/archive/`
-- Result: `results/archive/execution_semantic_search_budget/summary.json`
-- Key result: effective search ratio ≈ 0.996
-- Status: **NEGATIVE RESULT / HYPOTHESIS RULED OUT**
-- Reason archived: useful provenance, not part of the final causal story.
+## E08 — Proxy-selected versus first-candidate downstream runs
+
+**Question.** Does the numerically near-tied Proxy guidance produce a stable downstream improvement over choosing the first candidate?
+
+**Supporting script**
+
+```text
+experiments/audits/supporting/compare_proxy_vs_first_downstream.py
+```
+
+The three matched pairs for seeds `20261002`, `20262000`, and `20263000` are under:
+
+```text
+audit_results/downstream_matched_control/
+```
+
+The direction of the accuracy difference changes across the three rounds. I therefore treat this comparison as inconclusive.
+
+## E09 — Released versus canonical runtime under all-agent final aggregation
+
+**Question.** Does coordinate repair change final correctness under the released final-aggregation architecture?
+
+**Scripts**
+
+```text
+experiments/audits/core/run_gsm8k_matched_control.py
+experiments/audits/core/run_gsm8k_canonical_repair.py
+```
+
+The matched seed `20266000` files are under:
+
+```text
+audit_results/downstream_matched_control/
+```
+
+Paired summary:
+
+```text
+evidence/paired_downstream_summary.csv
+```
+
+Observed result:
+
+- accuracy: 0.96 vs. 0.96
+- generated topology same: 49/50
+- executed topology same: 0/50
+- correctness outcome same: 50/50
+
+## E10 — Sink-only final-decision ablation
+
+**Question.** Does restricting final aggregation to terminal spatial nodes expose more outcome sensitivity to intermediate topology?
+
+**Scripts**
+
+```text
+experiments/audits/core/decision_policy_patch.py
+experiments/audits/core/run_gsm8k_sink_original.py
+experiments/audits/core/run_gsm8k_sink_canonical.py
+```
+
+The matched seed `20267000` files are under:
+
+```text
+audit_results/downstream_matched_control/
+```
+
+Observed result:
+
+- accuracy: 0.96 vs. 0.92
+- paired correctness disagreements: 2/50
+- exact two-sided McNemar \(p=0.5\)
+
+This experiment is exploratory.
+
+Discordant examples:
+
+```text
+evidence/key_cases/case_sink_disagreement_index7.json
+evidence/key_cases/case_sink_disagreement_index24.json
+```
+
+## E11 — Candidate-budget hypothesis
+
+**Question.** Does the runtime mapping substantially collapse the effective \(K=5\) candidate set?
+
+**Scripts**
+
+```text
+experiments/audits/archive/audit_effective_search_budget.py
+experiments/audits/archive/audit_execution_semantic_search_budget.py
+```
+
+The effective executed-candidate ratio is approximately 0.996 in the audit used to test this hypothesis. I keep this as a negative result rather than as part of the main explanation.
