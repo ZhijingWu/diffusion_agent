@@ -1,0 +1,102 @@
+{
+  "dataset": "gtd_gsm8k_dataset_training.jsonl",
+  "records": 300,
+  "num_nodes": 4,
+  "unique_raw_topologies": 6,
+  "unique_old_executed_topologies": 6,
+  "mean_utility": 0.94,
+  "mean_cost": 5.0,
+  "mean_raw_edges_nonself": 5.0,
+  "mean_old_mapped_edges": 3.6666666666666665,
+  "mean_old_executed_edges": 2.6666666666666665,
+  "mean_canonical_executed_edges": 3.0,
+  "mean_raw_to_old_mapped_jaccard": 0.3541666666666667,
+  "mean_raw_to_old_executed_jaccard": 0.27777777777777773,
+  "mean_raw_to_canonical_executed_jaccard": 0.6825396825396826,
+  "cost_alignment": {
+    "cost_vs_raw_nonself": {
+      "mae": 0.0,
+      "pearson": 1.0
+    },
+    "cost_vs_raw_including_self": {
+      "mae": 0.0,
+      "pearson": 1.0
+    },
+    "cost_vs_old_mapped": {
+      "mae": 1.3333333333333333,
+      "pearson": 0.9638447973629245
+    },
+    "cost_vs_old_executed": {
+      "mae": 2.3333333333333335,
+      "pearson": 0.9132233209773138
+    },
+    "cost_vs_canonical_executed": {
+      "mae": 2.0,
+      "pearson": 0.9009861607017401
+    }
+  },
+  "execution_collision_groups": 0,
+  "raw_topology_groups": [
+    {
+      "count": 50,
+      "raw_edges": 2,
+      "old_executed_edges": 1,
+      "canonical_executed_edges": 1,
+      "mean_utility": 0.9,
+      "mean_cost": 2.0,
+      "raw_old_exec_jaccard": 0.5,
+      "raw_canonical_exec_jaccard": 0.5
+    },
+    {
+      "count": 50,
+      "raw_edges": 3,
+      "old_executed_edges": 2,
+      "canonical_executed_edges": 3,
+      "mean_utility": 0.94,
+      "mean_cost": 3.0,
+      "raw_old_exec_jaccard": 0.0,
+      "raw_canonical_exec_jaccard": 1.0
+    },
+    {
+      "count": 50,
+      "raw_edges": 3,
+      "old_executed_edges": 3,
+      "canonical_executed_edges": 3,
+      "mean_utility": 0.94,
+      "mean_cost": 3.0,
+      "raw_old_exec_jaccard": 0.5,
+      "raw_canonical_exec_jaccard": 1.0
+    },
+    {
+      "count": 50,
+      "raw_edges": 3,
+      "old_executed_edges": 2,
+      "canonical_executed_edges": 2,
+      "mean_utility": 0.96,
+      "mean_cost": 3.0,
+      "raw_old_exec_jaccard": 0.0,
+      "raw_canonical_exec_jaccard": 0.6666666666666666
+    },
+    {
+      "count": 50,
+      "raw_edges": 7,
+      "old_executed_edges": 3,
+      "canonical_executed_edges": 3,
+      "mean_utility": 0.96,
+      "mean_cost": 7.0,
+      "raw_old_exec_jaccard": 0.25,
+      "raw_canonical_exec_jaccard": 0.42857142857142855
+    },
+    {
+      "count": 50,
+      "raw_edges": 12,
+      "old_executed_edges": 5,
+      "canonical_executed_edges": 6,
+      "mean_utility": 0.94,
+      "mean_cost": 12.0,
+      "raw_old_exec_jaccard": 0.4166666666666667,
+      "raw_canonical_exec_jaccard": 0.5
+    }
+  ],
+  "top_execution_collisions": []
+}

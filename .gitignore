@@ -29,3 +29,12 @@ __pycache__/
 result/
 gtd_*.jsonl
 datasets/gsm8k/
+
+# Audit raw artifacts / archived runs
+audit_results/**/per_record.jsonl
+audit_results/canonical_smoke_fidelity/
+audit_results/execution_semantic_search_budget/
+
+# Invalid / exploratory canonical runs
+audit_results/downstream_matched_control/*seed20265000*.json
+research_notes/author_email_draft.md

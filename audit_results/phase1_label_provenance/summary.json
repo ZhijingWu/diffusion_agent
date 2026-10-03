@@ -1,0 +1,304 @@
+{
+  "runner": "experiments/run_gsm8k.py",
+  "graph_source": "GDesigner/graph/graph.py",
+  "dataset": "gtd_gsm8k_dataset_training.jsonl",
+  "source_presence": {
+    "fixed_spatial_masks_found": true,
+    "arun_found": true,
+    "is_solved_found": true,
+    "utility_assignment_found": true,
+    "cost_assignment_found": true,
+    "performance_storage_found": true,
+    "graph_storage_found": true,
+    "runtime_mask_flatten_found": true,
+    "runtime_zip_found": true,
+    "decision_node_found": true
+  },
+  "dataset_checks": {
+    "records": 300,
+    "valid_records": 300,
+    "cost_equals_total_raw_ones_count": 300,
+    "cost_equals_total_raw_ones_rate": 1.0,
+    "cost_equals_nonself_count": 300,
+    "cost_equals_nonself_rate": 1.0,
+    "utility_binary_count": 300,
+    "utility_binary_rate": 1.0,
+    "utility_distribution": {
+      "1.0": 282,
+      "0.0": 18
+    },
+    "cost_distribution": {
+      "12.0": 50,
+      "3.0": 150,
+      "7.0": 50,
+      "2.0": 50
+    },
+    "unique_raw_topologies": 6
+  },
+  "ast_inventory": [
+    {
+      "line": 124,
+      "kind": "ASSIGN",
+      "lhs": "generated_data",
+      "rhs": "[]"
+    },
+    {
+      "line": 139,
+      "kind": "ASSIGN",
+      "lhs": "gdesigner_graph",
+      "rhs": "Graph(domain=args.domain, llm_name=args.llm_name, agent_names=agent_names_list, decision_method=args.decision_method, fixed_spatial_masks=topology_matrix)"
+    },
+    {
+      "line": 139,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "Graph(domain=args.domain, llm_name=args.llm_name, agent_names=agent_names_list, decision_method=args.decision_method, fixed_spatial_masks=topology_matrix)"
+    },
+    {
+      "line": 143,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "gdesigner_graph.arun({'task': task_query}, args.num_rounds)"
+    },
+    {
+      "line": 145,
+      "kind": "ASSIGN",
+      "lhs": "predict_answer",
+      "rhs": "gsm_get_predict(raw_answer[0])"
+    },
+    {
+      "line": 146,
+      "kind": "ASSIGN",
+      "lhs": "utility",
+      "rhs": "1.0 if predict_answer and float(predict_answer) == float(true_answer) else 0.0"
+    },
+    {
+      "line": 147,
+      "kind": "ASSIGN",
+      "lhs": "cost",
+      "rhs": "sum((sum(row) for row in topology_matrix))"
+    },
+    {
+      "line": 149,
+      "kind": "ASSIGN",
+      "lhs": "adj_matrix",
+      "rhs": "torch.tensor(topology_matrix, dtype=torch.float)"
+    },
+    {
+      "line": 150,
+      "kind": "ASSIGN",
+      "lhs": "(edge_index, _)",
+      "rhs": "dense_to_sparse(adj_matrix)"
+    },
+    {
+      "line": 158,
+      "kind": "ASSIGN",
+      "lhs": "data_point",
+      "rhs": "{'graph': topology_matrix, 'condition': task_condition_embedding.tolist(), 'node_features': [feat.tolist() for feat in node_features_base], 'performance': {'utility': utility, 'cost': cost}}"
+    },
+    {
+      "line": 183,
+      "kind": "ASSIGN",
+      "lhs": "adj_matrix",
+      "rhs": "torch.tensor(item['graph'], dtype=torch.float)"
+    },
+    {
+      "line": 184,
+      "kind": "ASSIGN",
+      "lhs": "(edge_index, _)",
+      "rhs": "dense_to_sparse(adj_matrix)"
+    },
+    {
+      "line": 185,
+      "kind": "ASSIGN",
+      "lhs": "rewards",
+      "rhs": "item['performance']"
+    },
+    {
+      "line": 186,
+      "kind": "ASSIGN",
+      "lhs": "proxy_data_item",
+      "rhs": "Data(x=torch.tensor(item['node_features'], dtype=torch.float), edge_index=edge_index, condition=torch.tensor(item['condition'], dtype=torch.float).unsqueeze(0), true_rewards=torch.tensor([rewards['utility'], rewards['cost']], dtype=torch.float).unsqueeze(0))"
+    },
+    {
+      "line": 196,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "diffusion_A0_list.append(item['graph'])"
+    },
+    {
+      "line": 277,
+      "kind": "ASSIGN",
+      "lhs": "proxy_model.reward_component_names",
+      "rhs": "['utility', 'cost']"
+    },
+    {
+      "line": 278,
+      "kind": "ASSIGN",
+      "lhs": "macp_weights",
+      "rhs": "{'utility': 1.0, 'cost': -0.1}"
+    },
+    {
+      "line": 333,
+      "kind": "ASSIGN",
+      "lhs": "generated_adj_matrix",
+      "rhs": "(generated_A0_probs.squeeze(0) > 0.5).int()"
+    },
+    {
+      "line": 336,
+      "kind": "ASSIGN",
+      "lhs": "gdesigner_graph",
+      "rhs": "Graph(domain=args.domain, llm_name=args.llm_name, agent_names=agent_names_list, decision_method=args.decision_method, fixed_spatial_masks=generated_adj_matrix.tolist())"
+    },
+    {
+      "line": 336,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "Graph(domain=args.domain, llm_name=args.llm_name, agent_names=agent_names_list, decision_method=args.decision_method, fixed_spatial_masks=generated_adj_matrix.tolist())"
+    },
+    {
+      "line": 346,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "gdesigner_graph.arun(input_dict, args.num_rounds)"
+    },
+    {
+      "line": 349,
+      "kind": "ASSIGN",
+      "lhs": "predict_answer",
+      "rhs": "gsm_get_predict(raw_answer[0])"
+    },
+    {
+      "line": 350,
+      "kind": "ASSIGN",
+      "lhs": "is_solved",
+      "rhs": "float(predict_answer) == float(true_answer) if predict_answer else False"
+    },
+    {
+      "line": 358,
+      "kind": "ASSIGN",
+      "lhs": "updated_item",
+      "rhs": "{'Question': task_query, 'Answer': true_answer, 'Response': raw_answer, 'Attempt answer': predict_answer, 'Solved': is_solved, 'Generated_Topology': generated_adj_matrix.tolist(), 'Total solved': total_solved, 'Total executed': total_executed, 'Accuracy': accuracy}"
+    },
+    {
+      "line": 395,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "Graph(domain='gsm8k', llm_name=args.llm_name, agent_names=agent_names, decision_method=decision_method, optimized_spatial=args.optimized_spatial, optimized_temporal=args.optimized_temporal, **kwargs)"
+    },
+    {
+      "line": 432,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "answer_log_probs.append(asyncio.create_task(realized_graph.arun(input_dict, args.num_rounds)))"
+    },
+    {
+      "line": 432,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "asyncio.create_task(realized_graph.arun(input_dict, args.num_rounds))"
+    },
+    {
+      "line": 432,
+      "kind": "CALL",
+      "lhs": "",
+      "rhs": "realized_graph.arun(input_dict, args.num_rounds)"
+    },
+    {
+      "line": 440,
+      "kind": "ASSIGN",
+      "lhs": "predict_answer",
+      "rhs": "gsm_get_predict(answer[0])"
+    },
+    {
+      "line": 441,
+      "kind": "ASSIGN",
+      "lhs": "is_solved",
+      "rhs": "float(predict_answer) == float(true_answer) if predict_answer else False"
+    },
+    {
+      "line": 442,
+      "kind": "ASSIGN",
+      "lhs": "total_solved",
+      "rhs": "total_solved + is_solved"
+    },
+    {
+      "line": 445,
+      "kind": "ASSIGN",
+      "lhs": "utility",
+      "rhs": "is_solved"
+    },
+    {
+      "line": 448,
+      "kind": "ASSIGN",
+      "lhs": "single_loss",
+      "rhs": "-log_prob * utility"
+    },
+    {
+      "line": 450,
+      "kind": "ASSIGN",
+      "lhs": "updated_item",
+      "rhs": "{'Question': task_record['task'], 'Answer': true_answer, 'Step': task_record['step'], 'Response': answer, 'Attempt answer': predict_answer, 'Solved': is_solved, 'Total solved': total_solved, 'Total executed': total_executed, 'Accuracy': accuracy}"
+    },
+    {
+      "line": 498,
+      "kind": "ANNASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "None"
+    },
+    {
+      "line": 504,
+      "kind": "ASSIGN",
+      "lhs": "adj_matrix",
+      "rhs": "[[0 for _ in range(n)] for _ in range(n)]"
+    },
+    {
+      "line": 516,
+      "kind": "ASSIGN",
+      "lhs": "adj_matrix[i][j]",
+      "rhs": "1"
+    },
+    {
+      "line": 527,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "[[0]]"
+    },
+    {
+      "line": 531,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "[[1 if i != j else 0 for i in range(N)] for j in range(N)]"
+    },
+    {
+      "line": 534,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "[[random.randint(0, 1) if i != j else 0 for i in range(N)] for j in range(N)]"
+    },
+    {
+      "line": 537,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "[[1 if i == j + 1 else 0 for i in range(N)] for j in range(N)]"
+    },
+    {
+      "line": 540,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "[[0 for i in range(N)] for j in range(N)]"
+    },
+    {
+      "line": 543,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "generate_layered_graph(N)"
+    },
+    {
+      "line": 546,
+      "kind": "ASSIGN",
+      "lhs": "fixed_spatial_masks",
+      "rhs": "generate_star_graph(N)"
+    }
+  ]
+}

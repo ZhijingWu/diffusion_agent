@@ -1,0 +1,6 @@
+experiment,N,base_seed,arm_A,arm_B,accuracy_A,accuracy_B,avg_tokens_A,avg_tokens_B,same_generated_topology,same_executed_topology,same_correctness,A_correct_B_wrong,A_wrong_B_correct,mcnemar_exact_two_sided_p
+round1_first_vs_proxy,100,20261002,first,proxy,0.91,0.95,1494.89,1496.35,96,96,96,0,4,0.125
+round2_first_vs_proxy,100,20262000,first,proxy,0.91,0.92,1561.25,1493.94,95,95,97,1,2,1.0
+round3_first_vs_proxy,100,20263000,first,proxy,0.92,0.9,1367.39,1382.6,94,94,96,3,1,0.625
+all_agent_original_vs_canonical,50,20266000,original,canonical,0.96,0.96,1624.04,1696.72,49,0,50,0,0,1.0
+sink_only_original_vs_canonical,50,20267000,original,canonical,0.96,0.92,1466.4,1530.14,49,0,48,2,0,0.5
