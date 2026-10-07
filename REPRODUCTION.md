@@ -6,6 +6,12 @@ The audit started from a simple question: when the diffusion model produces an \
 
 The results below refer to the released code path reproduced in this branch. I do not assume that they extend to other benchmarks, checkpoints, or repository revisions without separate verification.
 
+## Technical note
+
+A concise two-page summary of the reproduction and execution-semantics audit is available here:
+
+[GTD Reproduction Technical Note](docs/GTD_Reproduction_Technical_Note_Zhijing_Wu.pdf)
+
 ## Reproduction scope
 
 The main reproduction uses GSM8K with four homogeneous `MathSolver` agents.

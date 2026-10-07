@@ -15,6 +15,8 @@ The rest of the analysis traces how the Phase-1 labels are produced, checks Prox
 
 See [`REPRODUCTION.md`](REPRODUCTION.md) for details.
 
+Technical note: [GTD Reproduction Technical Note](docs/GTD_Reproduction_Technical_Note_Zhijing_Wu.pdf).
+
 ---
 
 # Agent-Diffusion: Guided Topology Diffusion for Multi-Agent Systems
